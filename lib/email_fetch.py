@@ -20,15 +20,20 @@ class GMessage:
     """
     def __init__(self, service):
         self.resource = service.users().messages()
+        self._req = None
+        self._messages = None
 
     def get_list(self):
         """
         Class that retrieves the list of emails
         """
-        req = self.resource.list(userId='me')
-        messages = req.execute()
+        if self._req:
+            self._req = self.resource.list_next(self._req, self._messages)
+        else:
+            self._req = self.resource.list(userId='me')
 
-        return messages.get('messages')
+        self._messages = self._req.execute()
+        return self._messages.get('messages')
 
     def get_msg(self, email_id):
         """
@@ -67,26 +72,31 @@ def get_text_from_html(html):
     else:
         return soup.get_text()
 
-def fetch_and_store_emails():
+def fetch_and_store_emails(service):
     """
     Uses the google service to retrieve a collection of Emails
     and immediately stores them into a file
     """
-    service = get_gmail_service()
     gmsg = GMessage(service)
 
+    total = 0
+    page = 1
     messages = gmsg.get_list()
+    while not messages is None:
+        num_emails =  len(messages)
+        count = 0
+        for m in messages:
+            msg_body = gmsg.get_msg(m['id'])
+            _write_to_file(msg_body, m['id'])
 
-    num_emails =  len(messages)
-    count = 0
-    for m in messages:
-        sys.stdout.write('\rFetching  ' + str(count) + ' of ' + str(num_emails))
-        sys.stdout.flush()
-        msg_body = gmsg.get_msg(m['id'])
-        _write_to_file(msg_body, m['id'])
-        sys.stdout.write('\rCompleted ' + str(count) + ' of ' + str(num_emails))
-        sys.stdout.flush()
-        count += 1
+            count += 1
+            total += 1
+
+            sys.stdout.write('\r(' + str(total) + '); page ' + str(page) + '; email ' + str(count) + '/' + str(num_emails))
+            sys.stdout.flush()
+
+            messages = gmsg.get_list()
+        page += 1
 
 def _write_to_file(data, id):
     file_name = 'emails/' + str(id) + '.json'

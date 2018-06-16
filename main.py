@@ -13,6 +13,8 @@ from lib import clustering as cl
 #################
 
 def main():
+    service = ga.get_gmail_service()
+
     # Load information from files
     emails = ef.load_emails()
 
