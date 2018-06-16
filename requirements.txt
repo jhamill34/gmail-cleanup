@@ -3,3 +3,7 @@ oauth2client
 beautifulsoup4
 nltk
 twilio
+pandas
+numpy
+scipy
+sklearn
