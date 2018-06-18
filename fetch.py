@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import os
+
 import pandas as pd
 from sklearn.decomposition import PCA
 
@@ -9,7 +11,7 @@ from lib import clustering as cl
 from twilio.rest import Client
 
 # Your Account SID from twilio.com/console
-account_sid = "ACb7a4001997135d639d2cd5f6fb548e3d"
+account_sid = os.environ['TWILIO_SID']
 
 # Your Auth Token from twilio.com/console
 auth_token  = os.environ['TWILIO_AUTH_TOKEN']
@@ -25,8 +27,8 @@ def fetch_emails():
     number_of_files = ef.fetch_and_store_emails(service)
 
     message = client.messages.create(
-        to="+14257609918",
-        from_="+14252305280",
+        to=os.environ['TWILIO_TO'],
+        from_=os.environ['TWILIO_FROM'],
         body="Downloaded " + str(number_of_files) + " emails from your account!")
 
 
