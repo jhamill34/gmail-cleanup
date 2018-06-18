@@ -12,7 +12,7 @@ from twilio.rest import Client
 account_sid = "ACb7a4001997135d639d2cd5f6fb548e3d"
 
 # Your Auth Token from twilio.com/console
-auth_token  = ""
+auth_token  = os.environ['TWILIO_AUTH_TOKEN']
 
 client = Client(account_sid, auth_token)
 
@@ -22,12 +22,13 @@ client = Client(account_sid, auth_token)
 
 def fetch_emails():
     service = ga.get_gmail_service()
-    ef.fetch_and_store_emails(service)
+    number_of_files = ef.fetch_and_store_emails(service)
 
     message = client.messages.create(
         to="+14257609918",
         from_="+14252305280",
-        body="I've Found all your Emails!")
+        body="Downloaded " + str(number_of_files) + " emails from your account!")
+
 
 
 if __name__ == "__main__":

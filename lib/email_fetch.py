@@ -27,13 +27,20 @@ class GMessage:
         """
         Class that retrieves the list of emails
         """
+
+        # If req was None we need to get an initial state
         if self._req:
             self._req = self.resource.list_next(self._req, self._messages)
         else:
             self._req = self.resource.list(userId='me')
 
-        self._messages = self._req.execute()
-        return self._messages.get('messages')
+        # If req is None after fetching then there are no more to get
+        result = None
+        if self._req:
+            self._messages = self._req.execute()
+            result = self._messages.get('messages')
+
+        return result
 
     def get_msg(self, email_id):
         """
@@ -92,11 +99,12 @@ def fetch_and_store_emails(service):
             count += 1
             total += 1
 
-            sys.stdout.write('\r(' + str(total) + '); page ' + str(page) + '; email ' + str(count) + '/' + str(num_emails))
+            sys.stdout.write('\r(' + str(total) + '); page ' + str(page) + '; email ' + str(count) + '/' + str(num_emails) + ' | ' + str(gmsg._messages.get('resultSizeEstimate')))
             sys.stdout.flush()
 
-            messages = gmsg.get_list()
+        messages = gmsg.get_list()
         page += 1
+    return total
 
 def _write_to_file(data, id):
     file_name = 'emails/' + str(id) + '.json'
